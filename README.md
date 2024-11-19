@@ -1,3 +1,4 @@
 # osc-projects
-In this repository, I upload and keep track of all source code of the concepts and the projects given in the book - Operating Systems Concepts (by Abraham Silberchartz).
-Additionally, all projects related to OS will be pushed here. Not too big projects, only pet ones of course :)
+OSC projects, meaning OS and C related projects, some quick ideas and their implementations, simple pet projects are located here.
+
+Later on, I'll write a broad documentation ;)
