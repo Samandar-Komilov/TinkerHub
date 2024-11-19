@@ -1,7 +1,3 @@
-/*
-*** FCFS - First Come First Served Algorithm (Non-preemptive)
-*/
-
 #include <iostream>
 
 using namespace std;
@@ -13,10 +9,12 @@ typedef struct {
     int arrivalTime;
     int waitingTime;
     int turnaroundTime;
+    bool is_completed;
 } Process;
 
-void firstComeFirstServed(Process processes[], int n);
 
+void shortest_job_first(Process processes[], int n);
+void sort_job_bursts(Process* processes, int n);
 
 
 int main(){
@@ -34,16 +32,17 @@ int main(){
         cin >> processes[i].burstTime;
     }
 
-    firstComeFirstServed(processes, n);
+    shortest_job_first(processes, n);
 
     return 0;
 }
 
 
-void firstComeFirstServed(Process processes[], int n){
+void shortest_job_first(Process processes[], int n){
     int currentTime = 0;
-    int totalWaitingTime = 0;
-    int totalTurnaroundTime = 0;
+    int totalWaitingTime = 0, totalTurnaroundTime = 0;
+
+    sort_job_bursts(processes, n);
 
     for (int i=0; i<n; i++){
         if (currentTime < processes[i].arrivalTime){
@@ -56,11 +55,31 @@ void firstComeFirstServed(Process processes[], int n){
 
         cout << "Process " << processes[i].id << " | Arrival Time " << processes[i].arrivalTime << " | Burst Time "
             << processes[i].burstTime << " | Waiting time " << processes[i].waitingTime << endl;
-
+        
         totalWaitingTime += processes[i].waitingTime;
         totalTurnaroundTime += processes[i].turnaroundTime;
     }
 
+    int i=0;
+    while (i<n){
+
+        i++;
+        currentTime++;
+    }
+
     cout << "Average Waiting time: " << (totalWaitingTime / n) << endl;
     cout << "Average Turnaround time: " << (totalTurnaroundTime / n) << endl;
+}
+
+
+void sort_job_bursts(Process* processes, int n){
+    for (int step = 0; step < n - 1; ++step) {
+        for (int i = 0; i < n - step - 1; ++i) {
+            if (processes[i].burstTime > processes[i + 1].burstTime) {
+                Process temp = processes[i];
+                processes[i] = processes[i + 1];
+                processes[i + 1] = temp;
+            }
+        }
+    }
 }
