@@ -1,3 +1,4 @@
+// Soon We'll start writing in Zig
 const std = @import("std");
 
 pub fn main() !void {
