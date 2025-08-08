@@ -1,13 +1,15 @@
 package main
 
-import (
-	"fmt"
-
-	"rsc.io/quote"
-)
+import "fmt"
 
 func main() {
-	fmt.Println("Hello World!")
-	fmt.Println(quote.Go())
-	fmt.Println(hello("Sam"))
+	cnt := 0
+
+	for {
+		fmt.Println("Looping...")
+		cnt++
+		if cnt == 5 {
+			break
+		}
+	}
 }
