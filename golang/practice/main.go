@@ -1,15 +1,21 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func main() {
-	cnt := 0
+	// basics.Loop1to10()
 
-	for {
-		fmt.Println("Looping...")
-		cnt++
-		if cnt == 5 {
-			break
-		}
-	}
+	// var strings = []string{"apple", "orange", "I", "have", "money"}
+	// basics.Iterstrings(strings)
+	// basics.Switch1(strings[1])
+
+	var data = [3]string{"Eshmat", "Tashkent", "Uzbekistan"}
+	fmt.Println(data)
+	var ints []int
+	fmt.Printf("%p\n", &ints)
+	ints = append(ints, 10, 20, 30)
+
+	fmt.Printf("%p\n", &ints)
 }
