@@ -1,6 +1,9 @@
 package basics
 
-import "fmt"
+import (
+	"fmt"
+	"slices"
+)
 
 func Main_arrslice() {
 	// 1
@@ -21,5 +24,25 @@ func Main_arrslice() {
 	fmt.Println(slc2, len(slc2), cap(slc2))
 	// 6
 	copy(slc2, slc1)
+	fmt.Println(slc2)
+	// 9
+	slc2 = append(slc2, slc2...)
+	fmt.Println(slc2)
+	// Removing elements
+	// 10
+	slc2 = append(slc2[:0], slc2[1:]...)
+	fmt.Println(slc2)
+	// 11
+	slc2 = append(slc2[:len(slc2)-1], slc2[len(slc2):]...)
+	fmt.Println(slc2)
+	// 12
+	slc2 = append(slc2[:5], slc2[6:]...)
+	fmt.Println(slc2)
+	// 13
+	if slc2 == nil {
+		fmt.Println("Slice is nil")
+	}
+	// 14
+	slices.Reverse(slc2)
 	fmt.Println(slc2)
 }
