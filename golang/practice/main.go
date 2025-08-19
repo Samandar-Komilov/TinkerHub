@@ -4,5 +4,7 @@ import "github.com/go-practice/basics"
 
 func main() {
 	// basics.Main_vardt()
-	basics.Main_arrslice()
+	// basics.Main_arrslice()
+	// basics.Main_stringrunes()
+	basics.Main_maps()
 }

@@ -113,9 +113,9 @@ func dequeue(slice []int) []int {
 }
 
 // 26
-func insertInefficient(slice []int, val int, idx int) []int {
-	return append(append(slice[:idx], val), slice[idx+1:]...)
-}
+// func insertInefficient(slice []int, val int, idx int) []int {
+// 	return append(append(slice[:idx], val), slice[idx+1:]...)
+// }
 
 func insertEfficient(slice []int, val int, idx int) []int {
 	newslice := append(slice, 0)
