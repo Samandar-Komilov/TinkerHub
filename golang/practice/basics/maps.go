@@ -3,6 +3,7 @@ package basics
 import (
 	"fmt"
 	"maps"
+	"slices"
 )
 
 type Set map[string]struct{}
@@ -53,13 +54,31 @@ func Main_maps() {
 	s1.Add("hello")
 	s1.Add("world")
 	fmt.Println(s1, s1.Contains("hi"))
+
 	// 14: Contains duplicates (for + Contains)
+	slc1 := []int{1, 2, 2, 3, 4, 4}
+	any_duplicates := contains_duplicates(slc1)
+	fmt.Println(any_duplicates)
+
 	// 15: intersection of slices: (for + contains)
-	// 16:
-	// 17:
-	// 18:
-	// 19:
-	// 20:
+	slc2 := []int{6, 7, 8, 1}
+	intersected_slc := slice_intersection(slc1, slc2)
+	fmt.Println(intersected_slc)
+
+	// 16: Group strings in a slice by their length using a map.
+	slc3 := []string{"hello", "hi", "ah", "ohh", "whats"}
+	grouped_map := group_strings(slc3)
+	fmt.Println(grouped_map)
+
+	// 17: Convert a map into a slice of keys.
+	fmt.Println(slices.Collect(maps.Keys(grouped_map)))
+	// 18: Convert a map into a slice of values.
+	fmt.Println(slices.Collect(maps.Values(grouped_map)))
+	// 19: Sort the keys of a map and print them in order.
+	slices.Sort(slices.Collect(maps.Keys(grouped_map)))
+	fmt.Println(grouped_map)
+	// 20: Write a function that inverts a map (keys become values and vice versa).
+	// for with a new map, simple
 }
 
 func count_words(s string) string {
@@ -87,4 +106,51 @@ func (s Set) Remove(element string) {
 func (s Set) Contains(element string) bool {
 	_, ok := s[element]
 	return ok
+}
+
+func contains_duplicates(slice []int) bool {
+	mp := make(map[int]int)
+
+	for _, e := range slice {
+		if mp[e] > 0 {
+			return true
+		}
+		mp[e] += 1
+	}
+
+	return false
+}
+
+func slice_intersection(slc1 []int, slc2 []int) []int {
+	mp := make(map[int]int)
+	var res []int
+
+	for _, e := range slc1 {
+		if mp[e] == 0 {
+			mp[e] += 1
+		}
+	}
+
+	for _, e := range slc2 {
+		mp[e] += 1
+	}
+
+	for key, val := range mp {
+		if val == 2 {
+			res = append(res, key)
+		}
+	}
+
+	return res
+}
+
+func group_strings(slc []string) map[int][]string {
+	mp := make(map[int][]string)
+
+	for _, e := range slc {
+		ln := len(e)
+		mp[ln] = append(mp[ln], e)
+	}
+
+	return mp
 }

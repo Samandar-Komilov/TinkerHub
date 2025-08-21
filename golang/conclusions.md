@@ -1,5 +1,11 @@
 # Golang Practice Quick
 
+## Standard Library
+- slices
+- strings
+- maps
+- sort
+
 ## Basics
 
 
@@ -78,5 +84,18 @@ func main() {
 ```
 Outside a function, every statement begins with a keyword (var, func, and so on) and so the := construct is not available.
 
-### Loops, Conditionals and Defer
+The data types include: bool, int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, uintptr, byte, rune, float32, float64, complex64, complex128, string and error.
 
+More about strings later...
+
+### Composite Types: Arrays and Slices
+
+- [Everything about Golang Arrays](https://www.kelche.co/blog/go/golang-arrays/)
+- [Go Slices and its Reallocation Strategy](https://medium.com/@arjun.devb25/understanding-gos-slice-data-structure-and-its-growth-pattern-48fe6dd914b4)
+- [make() function usages](https://www.zetcode.com/golang/builtins-make/)
+	- includes the usage of `make()` with slices, maps and channels
+- [Array to Slice and Slice to Array Conversions](https://labex.io/tutorials/go-how-to-slice-arrays-correctly-418936)
+
+
+### Maps
+- [Go Maps Official Blog](https://go.dev/blog/maps)
