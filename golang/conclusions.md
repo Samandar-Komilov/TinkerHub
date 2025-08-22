@@ -99,3 +99,10 @@ More about strings later...
 
 ### Maps
 - [Go Maps Official Blog](https://go.dev/blog/maps)
+
+
+### Structs
+- [GoByExample Official](https://gobyexample.com/structs)
+- [GoByExample Struct Embedding](https://gobyexample.com/struct-embedding)
+- [Anonymous Structs](https://www.willem.dev/articles/anonymous-structs/)
+- [Struct Field Validations](https://leapcell.io/blog/go-validation-complex-structs)
