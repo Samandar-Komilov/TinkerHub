@@ -7,5 +7,6 @@ func main() {
 	// basics.Main_arrslice()
 	// basics.Main_stringrunes()
 	// basics.Main_maps()
-	basics.Main_structs()
+	// basics.Main_structs()
+	basics.Main_functions()
 }

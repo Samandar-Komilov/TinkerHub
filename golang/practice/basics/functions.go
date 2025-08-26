@@ -1,6 +1,49 @@
 package basics
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
+
+func Main_functions() {
+	// 4: Create a function that returns result or an error
+	res, err := divide(64, 8)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(res)
+
+	// 5: Named return values
+	a, b := getCoordinates()
+	fmt.Println(a, b)
+
+	// 7: Sum variables
+	s := sumAll(1, 2, 3)
+	fmt.Println(s)
+}
+
+func divide(divident, divisor float64) (float64, error) {
+	if divisor == 0 {
+		return 0, errors.New("no division to zero")
+	}
+	return divident / divisor, nil
+}
+
+func getCoordinates() (x, y int) {
+	x, y = 1, 2
+	return
+}
+
+func sumAll(numbers ...int) int {
+	s := 0
+	for _, v := range numbers {
+		s += v
+	}
+	return s
+}
+
+// Old exercises
 
 func VariadicSum(nums ...int) int {
 	sum := 0

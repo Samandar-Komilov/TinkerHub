@@ -218,56 +218,55 @@
 > - closures
 > - call by value and call by reference
 
-1. Basic function declaration and call
-2. Function with multiple parameters
-3. Function with single return value
-4. Function with multiple return values
-5. Named return values
-6. Ignoring return values
-7. Variadic function with integers
-8. Variadic function with interface{}
-9. Pass slice to variadic function
-10. Anonymous function assigned to variable
-11. Immediately invoked function expression
-12. Function returning another function
-13. Simple closure capturing variable
-14. Closure with parameter
-15. Multiple closures sharing state
-16. Closure modifying captured variable
-17. Function taking function as parameter
-18. Function returning multiple functions
-19. Pass by value demonstration
-20. Pass by pointer demonstration
-21. Method vs function comparison
-22. Recursive function
-23. Defer basic usage
-24. Multiple defers (LIFO order)
-25. Defer with named return values
-26. Defer modifying return values
-27. Function that panics
-28. Recover from panic
-29. Type assertion in function
-30. Function with type parameters
-31. Generic function working with multiple types
-32. Function returning error
-33. Handle error from function
-34. Function that returns function
-35. Function with context parameter
-36. Function with slice parameter
-37. Function with map parameter
-38. Function with channel parameter
-39. Function with struct parameter
-40. Function with interface parameter
-41. Function that modifies its arguments
-42. Function that copies its arguments
-43. Benchmark function calls
-44. Function with ...interface{} parameter
-45. Function that accepts any type
-46. Function with struct return value
-47. Function with pointer return value
-48. Function returning interface
-49. Function with channel return
-50. Function that times other functions
+1.  **Create a function `greet()` that prints "Hello, World!" and call it from `main`.**
+2.  **Write a function `printSum(a int, b int)` that calculates and prints the sum of two integers.**
+3.  **Create a function `isEven(num int) bool` that returns `true` if the number is even.**
+4.  **Write a function `divide(dividend, divisor float64) (float64, error)` that returns the result and an error if divisor is zero.**
+5.  **Create a function `getCoordinates() (x, y int)` with named returns for x and y, assign values to them, and return.**
+6.  **Call the `divide` function from exercise 4 but ignore the error value using an underscore `_`.**
+7.  **Write a function `sumAll(numbers ...int) int` that sums a variable number of integers.**
+8.  **Create a function `printAll(values ...interface{})` that prints each value and its type.**
+9.  **Create a slice of strings `names := []string{"Alice", "Bob"}`. Pass it to a variadic function `printNames(names ...string)`.**
+10. **Assign an anonymous function `func() { fmt.Println("I'm anonymous") }` to a variable `f` and then call `f()`.**
+11. **Write an Immediately Invoked Function Expression (IIFE) that prints "Running now!" as soon as it's defined.**
+12. **Write a function `makeMultiplier(factor int) func(int) int` that returns a function which multiplies its input by the factor.**
+13. **Create a function `counter() func() int` that returns a closure. Each call to the closure should increment and return a counter variable.**
+14. **Write a closure `func(prefix string) func(string)` that returns a function which prints the prefix and a message passed to it.**
+15. **Create two different counters using the `counter()` function from exercise 13. Demonstrate they have independent state.**
+16. **Write a function `newCounter() func() int` where the closure modifies a variable in the outer function's scope.**
+17. **Create a function `apply(numbers []int, op func(int) int) []int` that applies the operation `op` to each number in the slice.**
+18. **Write a function `createGreeter(greeting string) (func(string), func(string))` that returns two functions: one that shouts the greeting and one that whispers it.**
+19. **Write a function `tryToChange(val int)` that tries to modify its integer argument. Show that the original variable in `main` is unchanged.**
+20. **Write a function `changeForReal(ptr *int)` that modifies the integer value at the given pointer.**
+21. **Create a struct `Rectangle` with `Width` and `Height`. Write a method `Area() int` for it. Compare calling `rect.Area()` vs. calling a standalone function `calcArea(rect Rectangle) int`.**
+22. **Write a recursive function `factorial(n int) int` to calculate the factorial of n.**
+23. **Write a function `readFile(filename string)` that uses `defer` to ensure a "file read attempted" message is printed at the end.**
+24. **Write a function that has three `defer` statements printing numbers 1, 2, 3. Show they run in LIFO (Last-In-First-Out) order.**
+25. **Write a function `getFileInfo(name string) (size int, err error)` with named returns. Use `defer` to log the size and error before returning.**
+26. **Write a function `trickyDefer() (result int)`. Inside, set `result = 10`, then use a `defer` to change `result++`. See what it returns.**
+27. **Create a function `riskyOperation()` that panics with a message "Something went terribly wrong!".**
+28. **Write a function `safeCall(f func())` that calls `f` and uses `recover` to catch any panic, printing the panic value.**
+29. **Write a function `getStringLength(val interface{}) (int, error)` that uses a type assertion to get the length if `val` is a string, or returns an error otherwise.**
+30. **Write a generic function `getFirst[T any](slice []T) T` that returns the first element of any type of slice.**
+31. **Write a generic function `areEqual[T comparable](a, b T) bool` that checks if two values of any comparable type are equal.**
+32. **Modify the `divide` function from exercise 4 to return a clear error message like "cannot divide by zero".**
+33. **Call the `divide` function and handle the error by printing it, or print the result if there is no error.**
+34. **Write a function `makeAdder() func(int) int` that returns a function which adds a specific number to its input.**
+35. **Write a function `processRequest(ctx context.Context, data string)` that checks if `ctx.Done()` is received and aborts early.**
+36. **Write a function `updateSlice(s []string, index int, value string)` that modifies the element at the given index.**
+37. **Write a function `updateMap(m map[string]int, key string, value int)` that sets a key-value pair in the map.**
+38. **Write a function `sendMessage(ch chan<- string, msg string)` that sends a message into the channel.**
+39. **Write a function `describeShape(s Shape)` that takes an interface parameter and calls its `Area()` method.**
+40. **Write a function `doubleIt(num *int)` that modifies the integer pointed to by `num` by multiplying it by 2.**
+41. **Write a function `createCopy(s []int) []int` that returns a new slice with the same elements as the input.**
+42. **Use the `testing` package to write a benchmark for a function that calculates the nth Fibonacci number.**
+43. **Write a function `logValues(values ...interface{})` that uses a type switch to handle `int`, `string`, and `bool` differently.**
+44. **Write a function `acceptAnything(val interface{})` that can be called with any type of argument.**
+45. **Write a function `createPerson(name string, age int) Person` that returns a struct of type `Person`.**
+46. **Write a function `createNumber() *int` that returns a pointer to a new integer.**
+47. **Write a function `getReader() io.Reader` that returns an interface type.**
+48. **Write a function `createResultChannel() chan int` that returns a new channel of integers.**
+49. **Write a function `timeFunction(f func()) time.Duration` that measures and returns how long the function `f` takes to execute.**
 
 
 ### Pointers: with structs, maps, slices and functions
