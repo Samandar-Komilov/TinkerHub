@@ -249,3 +249,20 @@ int searchFileForKeywords(FileParser *parser){
 ```
 
 Even though the lines of code is increased, we successfully applied all of the patterns and made our code readable, maintainable and testable. Yes, less code is better, but maintainable code is much better than less but later painful code.
+
+---
+
+Chapter 2 is basically the same, but about returning error information. Here is the full topics list:
+- **Return Status Codes:** Introduce a specific error code that both you and the caller mutually understand (using enums for example).
+- **Return Relevant Errors:** Return errors only which are relevant to the caller. The more error is returned the more code to handle them and the harder to maintain the codebase.
+- **Special Return Values:** 
+- **Log Errors:** Sometimes just logging the error is enough to developer to find the root cause of the problem, instead of returning to the caller.
+
+But we didn't spend time on these topics, as they are straightforward and we already used them in our nginx-clone project. But shortly, I will cover:
+- First one states that, because of we don't have Exceptions in C language, we need some way to distinguish errors. We do this using status codes, even though `errno` global variable was used in the past. Functions exchange error or success codes based on the behaviour.
+- Second states that only return relevant errors to the caller, it is not responsible to handle all cases which are local to the callee function. 
+- Third states that, we can use the actual return value of the function as success code, and some error codes as failure codes. For example, in success we return a pointer to the parser, in failure we return NULL.
+- Fourth states that, sometimes logging the error is enough to find the root cause of the problem, instead of returning to the caller. Caller is not responsible to handle all scenarios, especially that are local to the callee.
+
+!!! note
+    As I already stated, we did use each of these in our nginx-clone. So, I guess no need to copy-paste the code.
