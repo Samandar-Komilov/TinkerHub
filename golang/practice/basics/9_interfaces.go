@@ -182,14 +182,14 @@ func Dump(v interface{}) {
 
 // ======== Big Picture: 9
 
-type HandlerFunc func(int)
+type HandlerrFunc func(int)
 
-type Handler interface {
+type Handlerr interface {
 	Handle(int)
 }
 
 type HandlerAdapter struct {
-	hf HandlerFunc
+	hf HandlerrFunc
 }
 
 func (ha *HandlerAdapter) Handle(i int) {

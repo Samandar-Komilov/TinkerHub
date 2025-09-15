@@ -104,3 +104,178 @@ The reason why we allocated a separate file for this topic is, interfaces and ty
 
 ---
 
+# 🌐 Project: Mini Web App Simulator
+
+### Concept
+
+We simulate requests flowing through:
+
+1. **Middleware** (function type implementing interface).
+2. **Handlers** (DI: choose different storage/loggers).
+3. **Storage backends** (extensible via interfaces, no base “class” editing).
+
+---
+
+### Step 1. Define Core Interfaces
+
+```go
+package main
+
+import (
+	"fmt"
+)
+
+// Request is a simple struct instead of *http.Request
+type Request struct {
+	Path string
+	Body string
+}
+
+// Handler processes requests
+type Handler interface {
+	Handle(req Request)
+}
+```
+
+---
+
+### Step 2. Function Type as Handler (Exercise 9)
+
+```go
+// HandlerFunc is a function that can act like a Handler
+type HandlerFunc func(Request)
+
+func (f HandlerFunc) Handle(req Request) {
+	f(req) // just call the function
+}
+```
+
+Now any plain function with signature `func(Request)` can be treated as a `Handler`.
+(Aha: like `http.HandlerFunc` in the stdlib.)
+
+---
+
+### Step 3. Storage Interface (Exercise 10: DI)
+
+```go
+// Storage is an interface for saving data
+type Storage interface {
+	Save(data string)
+}
+
+// RealStorage saves to "real DB"
+type RealStorage struct{}
+
+func (RealStorage) Save(data string) {
+	fmt.Println("Saving to DB:", data)
+}
+
+// MockStorage is for testing
+type MockStorage struct{}
+
+func (MockStorage) Save(data string) {
+	fmt.Println("Mock save:", data)
+}
+```
+
+---
+
+### Step 4. A Request Handler That Uses Storage (DI in Action)
+
+```go
+// SaveHandler depends on Storage, but doesn’t create it itself
+type SaveHandler struct {
+	storage Storage
+}
+
+func (h SaveHandler) Handle(req Request) {
+	h.storage.Save(req.Body)
+}
+```
+
+You can now inject either `RealStorage` or `MockStorage`.
+
+---
+
+### Step 5. Extensible Interfaces (Exercise 11)
+
+```go
+// Logger is independent; anyone can implement it
+type Logger interface {
+	Log(msg string)
+}
+
+type ConsoleLogger struct{}
+
+func (ConsoleLogger) Log(msg string) { fmt.Println("LOG:", msg) }
+
+type FileLogger struct{}
+
+func (FileLogger) Log(msg string) { fmt.Println("File log:", msg) }
+```
+
+Notice: we didn’t touch the `Logger` interface when we added `FileLogger`.
+Any new type that has `Log(string)` can be plugged in.
+
+---
+
+### Step 6. Middleware Using Function Types
+
+```go
+// Middleware wraps a Handler
+type Middleware func(Handler) Handler
+
+// Example middleware: logging
+func LoggingMiddleware(logger Logger) Middleware {
+	return func(next Handler) Handler {
+		// Return a HandlerFunc (function as handler)
+		return HandlerFunc(func(req Request) {
+			logger.Log("Received request: " + req.Path)
+			next.Handle(req)
+		})
+	}
+}
+```
+
+---
+
+### Step 7. Putting It Together
+
+```go
+func main() {
+	// Choose DI storage implementation
+	storage := RealStorage{} // or MockStorage{}
+
+	// Choose DI logger implementation
+	logger := ConsoleLogger{} // or FileLogger{}
+
+	// Core handler
+	saveHandler := SaveHandler{storage: storage}
+
+	// Wrap handler with middleware
+	loggedHandler := LoggingMiddleware(logger)(saveHandler)
+
+	// Simulate request
+	req := Request{Path: "/submit", Body: "Hello, Go!"}
+	loggedHandler.Handle(req)
+}
+```
+
+---
+
+# ✅ What This Shows
+
+* **9. Functions as interfaces** → `HandlerFunc` lets raw functions behave like objects. Middleware is just a function wrapping a function.
+* **10. Dependency injection** → `SaveHandler` doesn’t know if it’s using real DB or mock; you inject the `Storage`. Similarly for loggers.
+* **11. Extensible interfaces** → You can add `FileLogger`, `CloudLogger`, `MemoryLogger` without ever touching the `Logger` interface.
+
+---
+
+# 🎯 Exercises in This Project
+
+1. **Add a new middleware** that rejects requests if `req.Body == ""`.
+2. **Add a new storage** type (`InMemoryStorage`) that stores values in a slice. Inject it and print the slice after a few requests.
+
+---
+
+👉 Do you want me to extend this into a **toy framework** (like a stripped-down `net/http`) so that later, when you actually learn `net/http`, you’ll recognize the design instantly?
