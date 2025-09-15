@@ -9,7 +9,7 @@ func main() {
 	// basics.Main_maps()
 	// basics.Main_structs()
 	// basics.Main_functions()
-	// basics.Main_interfaces()
+	basics.Main_interfaces()
 	// basics.Main_generics()
-	basics.Main_errors()
+	// basics.Main_errors()
 }

@@ -356,33 +356,7 @@
 30. Compare Go’s OOP approach with classical inheritance.  
 
 
-### Interfaces
-> - basics
-> - empty interfaces
-> - interface embedding
-> - type assertions
-> - type switch
-
-1. Define a `Shape` interface with `Area()` and `Perimeter()` methods.  
-2. Make `Rectangle` and `Circle` implement `Shape`.  
-3. Write a function that accepts `Shape` and prints its area.  
-4. Store different shapes in a `[]Shape` slice.  
-5. Check if a struct implements an interface at runtime.  
-6. Create a function that accepts `interface{}` and prints its type.  
-7. Store different types in an `[]interface{}` slice.  
-8. Use type assertion to extract an `int` from `interface{}`.  
-9. Handle cases where type assertion fails.  
-10. Pass a struct to a function that takes `interface{}`.  
-11. Embed `io.Reader` in a custom interface.  
-12. Combine multiple interfaces into one.  
-13. Override an embedded interface method.  
-14. Check if a struct satisfies a composite interface.  
-15. Use interface embedding to extend functionality.  
-16. Safely assert an interface to a concrete type.  
-17. Use a type switch to handle multiple possible types.  
-18. Distinguish between different structs in a type switch.  
-19. Handle `nil` interfaces in type assertions.  
-20. Use reflection to inspect an interface’s underlying type.  
+### Interfaces (moved to a separate file)
 
 
 ### Generics
