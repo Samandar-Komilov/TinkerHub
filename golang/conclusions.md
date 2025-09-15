@@ -283,6 +283,109 @@ puppy.Speak()         // Clearly calls Puppy's method (most specific)
 Debate: No interfaces, but duck typing (Python, Ruby, JS) vs explicit interfaces (Java, C++). Why Go chose middle?
 **RESEARCH: 201-205 pages**
 
-
 You can also embed interfaces in interfaces.
+
+
+### Error Handling
+
+Errors are values in Go and returned from functions. The same is used in C programs by they way.
+
+Go has built-in `error` interface with method `Error()`. We can create new errors using `errors.New()`
+
+Sentinel Errors are like our enums of errors in C programs. We were using them in our nginx-clone project, for example `PARSE_ERROR=-712`. Sentinel errors can be put in package level variables or consts. Sentinel errors should be rare.
+
+Since `error` is an interface, you can create your own errors by creating a new type that implements the `error` interface. For example:
+```go
+type Status int
+
+const (
+    InvalidLogin Status = iota + 1
+    NotFound
+)
+
+type StatusErr struct {
+    Status
+    Status
+    Message string
+}
+func (se StatusErr) Error() string {
+    return se.message
+}
+
+// Which can be used as follows
+func LoginAndGetData(uid, pwd, file string) ([]byte, error) {
+    err := login(uid, pwd)
+    if err != nil {
+        return nil, StatusErr{
+            Status:
+            InvalidLogin,
+            Message: fmt.Sprintf("invalid credentials for user %s", uid),
+        }
+    }
+    data, err := getData(file)
+    if err != nil {
+        return nil, StatusErr{
+            Status:
+            NotFound,
+            Message: fmt.Sprintf("file %s not found", file),
+        }
+    }
+    return data, nil
+}
+```
+[!] If you are using your own error type, be sure you don’t return an uninitialized instance.
+
+**Wrapping Errors**
+Wrapping and Unwrapping errors, Is and As, Wrapping with defer - research
+```go
+// Wrapping errors
+func ReadConfig() error {
+	return errors.New("file not found")
+}
+
+func InitApp() error {
+	if err := ReadConfig(); err != nil {
+		return fmt.Errorf("InitApp failed: %w", err)
+	}
+	return nil
+}
+```
+
+- `errors.Is(err, target)` - checks if the error chain contains a sentinel.
+- `errors.As(err, &target)` - checks if error chain contains a specific error type.
+
+We can wrap errors with defer, ensuring while the function is finishing with error, we can give additional context:
+```go
+func doStuff() (err error) {
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf("doStuff failed: %w", err)
+		}
+	}()
+	return errors.New("low level failure")
+}
+
+fmt.Println(doStuff()) // prints: doStuff failed: low level failure
+```
+
+**Panic and Recover** looks much like try-except in Python, but not really. 
+Panic stops the normal execution. Recover catches a panic inside a defer and can help us to make it error as value and return to the caller instead of stopping the whole program flow.
+```go
+func safeDivide(a, b int) (result int, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("panic recovered: %v", r)
+		}
+	}()
+	return a / b, nil // panic if b == 0
+}
+
+func main() {
+	res, err := safeDivide(10, 0)
+	fmt.Println("res:", res, "err:", err)
+}
+```
+If we use `recover()` everywhere, we might hide bugs unintentionally. There are cases where `panic()` has to be and some cases where we can `recover()` it.
+
+### Modules, Packages and Imports
 
