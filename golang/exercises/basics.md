@@ -356,9 +356,6 @@
 30. Compare Go’s OOP approach with classical inheritance.  
 
 
-### Interfaces (moved to a separate file)
-
-
 ### Generics
 > - generic functions
 > - generic types and interfaces
@@ -385,50 +382,6 @@
 19. Create a generic `Queue` with enqueue and dequeue operations.  
 20. Write a generic `Equal` function that checks if two slices are identical.  
 
-
-### Error Handling
-> - `error` interface
-> - wrapping and unwrapping errors
-> - `panic` and `recover`
-> - stack traces and debugging
-
-1.  **Basic Error Creation:** Write a function `Divide(a, b float64) (float64, error)` that returns an error if `b` is zero. Use `errors.New` to create the error.
-2.  **Error Checking:** Call your `Divide` function and check the error using a standard `if err != nil` block. Print the result or the error.
-3.  **Sentinel Errors:** Create a package-level error variable `var ErrNotFound = errors.New("not found")`. Write a function `FindUser(id int) (*User, error)` that returns this error if a user doesn't exist.
-4.  **Checking Sentinel Errors:** Call `FindUser` and use `errors.Is(err, ErrNotFound)` to check if the specific "not found" error occurred, handling it differently from other errors.
-5.  **Error Wrapping:** Write a function `ReadFile(path string) ([]byte, error)` that attempts to read a file. If `os.Open` fails, wrap its error using `fmt.Errorf("could not open file: %w", err)`.
-6.  **Unwrapping Errors:** Call your `ReadFile` function. Use `errors.Unwrap(err)` to get the original underlying error that was wrapped.
-7.  **Custom Error Type:** Create a custom error type `ValidationError` struct with a `Field` string and `Msg` string. Implement the `Error() string` method for it.
-8.  **Checking Custom Error Types:** Write a function that returns a `ValidationError`. Call it and use `errors.As(err, &valErr)` to check for and extract the specific `ValidationError`.
-9.  **Panic and Recover:** Write a function that panics with a string message. In your `main` function, use `defer` and `recover()` to catch the panic, print the message, and prevent a crash.
-10. **Defer with Error:** Write a function that opens a file and uses `defer` to close it. Ensure the file is closed even if an error occurs during processing.
-11. **Multiple Errors:** Write a function that performs two operations that can fail (e.g., open a file and decode its JSON). Return the first error encountered, if any.
-12. **Ignoring Errors (The Right Way):** Use the `os.Create` function. Intentionally ignore the error result using the blank identifier `_` because you are just practicing and assume the temp directory always exists. *(Note: This is rarely recommended in real code!)*
-13. **Error Context:** Write a function that processes a configuration file. Wrap any errors (from reading or parsing) to add context, e.g., `fmt.Errorf("processing config: %w", err)`.
-14. **Simple Retry Logic:** Write a function that calls a flaky `apiCall() error` function. If it returns an error, retry the call once before giving up.
-15. **Type Assertion for Errors:** Call a function that returns a standard library error (e.g., `os.Open`). Use a type assertion to check if the error is of type `*os.PathError` and print its `Path` field.
-16. **Nil Error Value:** Write a function `MaybeReturnsError() error` that conditionally returns an error or `nil`. In the caller, handle both cases correctly.
-17. **Error Logging:** Instead of just printing an error from `ReadFile`, use `log.Printf("operation failed: %v", err)` to log it with a timestamp.
-18. **Adding Context to Existing Error:** You are given an error `err` from an external library. Create a new error that provides more context: `fmt.Errorf("login failed for user %s: %w", username, err)`.
-19. **Handling Specific Syscall Errors:** Call `os.Open` on a non-existent file. Use `os.IsNotExist(err)` to check for this specific condition and handle it gracefully.
-20. **Cleanup on Error:** Write a function that creates a temporary file. If a later step in the function fails, use a deferred function to clean up (remove) the temporary file.
-
-
-### Code Organization
-> - modules and dependencies
-> - packages: import rules, 3rd party usage
-> - publishing modules
-
-1. Initialize a new Go module with `go mod init`.  
-2. Add an external dependency to your module.  
-3. Upgrade a dependency to its latest version.  
-4. Vendor dependencies using `go mod vendor`.  
-5. Import a local package within the same module.  
-6. Create a package with internal visibility (`internal/`).  
-7. Publish a module to GitHub and use it in another project.  
-8. Replace a dependency with a local fork in `go.mod`.  
-9. Use build tags to conditionally compile code.  
-10. Write a script to automate module version tagging.  
 
 ### Concurrency
 > - goroutines

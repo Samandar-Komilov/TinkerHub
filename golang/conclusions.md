@@ -389,3 +389,50 @@ If we use `recover()` everywhere, we might hide bugs unintentionally. There are 
 
 ### Modules, Packages and Imports
 
+Go code is organized into three main units: repositories, modules and packages.
+
+To be a module, the directory must have `go.mod` file.
+
+While importing, always use absolute path. Using relative path works, but it is not advised.
+
+The name of the package is determined by its **package clause**, not its import path.
+
+**Package names should be descriptive.**  
+- Don’t create two functions in a `util` package called ExtractNames and FormatNames. If you do, every time you use these functions, they will be referred to as `util.ExtractNames` and `util.FormatNames`, and that `util` package tells you nothing about what the functions do. 
+- It’s better to create one function called `Names` in a package called `extract` and a second function called `Names` in a package called `format`. Then you can call with `extract.Names()` and `format.Names()`.
+- Don’t name your function `ExtractNames` when it is in the `extract` package.
+
+You can override the name of the package if two names clash:
+```go
+import (
+    crand "crypto/rand"
+    "encoding/binary"
+    "fmt"
+    "math/rand"
+)
+```
+
+You need to comment your code using `godoc`. Make sure you comment your code properly. At the very least, any exported identifier should have a comment. Go linting tools such as golint and golangci-lint can report missing comments on exported identifiers. 
+
+Circular dependencies might occur, if your depedencies depend on each other. In that case, we might:
+- merge the two packages
+- move the dependent code in one of the package to the other
+
+**Gracefully renaming your API**  
+We can use type aliasing if we need to rename the existing data, like structs to be seen differently from outside world.
+
+**Working with Modules**
+We need to include the full path of the module we are importing, usually they are the paths of github repository.
+
+
+**Versioning your Module**
+If you publish your own module:  
+- Start with `v0.x` for experimental.
+- `v1.x` → stable API.
+- Breaking change → bump to `v2` and change import path (`/v2`).
+
+**Organizing our module**  
+There is not a standard way of doing this, but there are a number of precious resources that show different ways of doing it:
+- [Alex Edwards Blog](https://www.alexedwards.net/blog/11-tips-for-structuring-your-go-projects)
+- [Smart Byte Labs](https://medium.com/@smart_byte_labs/organize-like-a-pro-a-simple-guide-to-go-project-folder-structures-e85e9c1769c2)
+- [Melkey Youtube](https://youtu.be/dxPakeBsgl4?si=EzkGMvqAHCXn802U)
