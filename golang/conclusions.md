@@ -286,7 +286,10 @@ Debate: No interfaces, but duck typing (Python, Ruby, JS) vs explicit interfaces
 You can also embed interfaces in interfaces.
 
 
-### Error Handling
+### Generics
+Soon...
+
+## Error Handling
 
 Errors are values in Go and returned from functions. The same is used in C programs by they way.
 
@@ -387,7 +390,7 @@ func main() {
 ```
 If we use `recover()` everywhere, we might hide bugs unintentionally. There are cases where `panic()` has to be and some cases where we can `recover()` it.
 
-### Modules, Packages and Imports
+## Modules, Packages and Imports
 
 Go code is organized into three main units: repositories, modules and packages.
 
@@ -436,3 +439,220 @@ There is not a standard way of doing this, but there are a number of precious re
 - [Alex Edwards Blog](https://www.alexedwards.net/blog/11-tips-for-structuring-your-go-projects)
 - [Smart Byte Labs](https://medium.com/@smart_byte_labs/organize-like-a-pro-a-simple-guide-to-go-project-folder-structures-e85e9c1769c2)
 - [Melkey Youtube](https://youtu.be/dxPakeBsgl4?si=EzkGMvqAHCXn802U)
+
+
+---
+
+# Golang Practice Deeper
+
+## Concurrency
+
+### Goroutines, Channels and selection
+We should use concurrency during I/O bound tasks most of the time. It is not directly related to "making code faster", but managing resources more efficiently.
+
+**Goroutines.** A goroutine is a function running concurrently.
+```go
+import (
+	"fmt"
+	"time"
+)
+
+func worker(id int) {
+	for i := range 3 {
+		fmt.Printf("Worker %d: %d\n", id, i)
+		time.Sleep(2 * time.Second)
+	}
+}
+
+func Main_concurrency1() {
+	go worker(1)
+	go worker(2)
+
+	time.Sleep(10 * time.Second)
+	fmt.Println("Done")
+}
+```
+This code runs 2 independent goroutines each running its own for loop and sleeping for 2 seconds. It will run for 10 seconds and then print "Done".
+
+**Channels.** Channels are typed pipes for communication between channels. They are the core concept behind "don't share memory, communicate instead". Channels are built-in type in Go, just like slices and maps and can be created using `make()` function.
+```go
+ch := make(chan int) // unbuffered
+
+go func() {
+    ch <- 42 // send
+}()
+
+val := <-ch // receive
+fmt.Println(val) // 42
+```
+By default channels are unbuffered. Every write to an open, unbuffered channel causes the writing goroutine to pause until another goroutine reads from the same channel. Likewise, a read from an open, unbuffered channel causes the reading goroutine to pause until another goroutine writes to the same channel. This means you cannot write to or read from an unbuffered channel without at least two concurrently running goroutines.
+
+**Buffered Channels.** These channels buffer a limited number of writes without blocking. If the buffer fills before there are any reads from the channel, a subsequent write to the channel pauses the writing goroutine until the channel is read. Just as writing to a channel with a full buffer blocks, reading from a channel with an empty buffer also blocks. A buffered channel is created by specifying the capacity of the buffer when creating the channel:
+```go
+ch2 := make(chan string, 2)
+ch2 <- "A"
+ch2 <- "B"
+
+fmt.Println(<-ch2)
+ch2 <- "C"          // if I would put that after previous 2 writes, deadlock would happen. So, at least 1 read should occur before I write again.
+fmt.Println(<-ch2)
+fmt.Println(<-ch2)
+```
+
+**for-range over channels.** You can also read from channels using `for-range` loops. 
+```go
+ch3 := make(chan int, 3)
+
+go func() {
+    for i := range 3 {
+        ch3 <- i
+    }
+    close(ch3)
+}()
+
+for v := range ch3 {
+    fmt.Println("Got:", v)
+}
+```
+When you finish writing to a channel, you should `close()` the channel. After closing, any attempts to write to the channel or close the channel again will panic. Interestingly, attempting to read from a closed channel always succeeds. We can use comma-ok idiom to check if the channel is closed or not.
+
+**What is the difference between buffered and unbuffered channels? Why we need them both?**   
+- Unbuffered channels for Synchronization. 
+- Buffered channels for Producer-Consumer pattern.
+
+Let's consider the following scenarios one by one.
+(1) An application that receives user requests to process and upload a file. The main goroutine handles the user's HTTP request, but it needs to ensure the file is successfully moved to a final, secure location by a separate "file mover" goroutine before it can return a successful response to the user.
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+// A function that simulates moving a file to a final destination.
+// It sends a confirmation signal when done.
+func moveFile(source, destination string, done chan struct{}) {
+	fmt.Printf("File mover: Starting to move file from %s to %s...\n", source, destination)
+
+	// Simulate a time-consuming but crucial operation
+	time.Sleep(3 * time.Second)
+
+	fmt.Println("File mover: File move complete. Sending confirmation.")
+
+	// Send an empty struct to signal completion.
+	// This send operation will block until a receiver is ready.
+	done <- struct{}{}
+}
+
+func main() {
+	fmt.Println("Main: User request received. Spawning file mover goroutine.")
+
+	// Create an unbuffered channel for synchronization.
+	// It has a capacity of 0.
+	done := make(chan struct{})
+
+	// Start the background goroutine to move the file.
+	go moveFile("/tmp/upload.dat", "/var/secure/data.dat", done)
+
+	fmt.Println("Main: Waiting for file move confirmation...")
+
+	// Block here, waiting for a signal on the 'done' channel.
+	// This will block the main function until the 'moveFile' goroutine sends a value.
+	<-done
+
+	fmt.Println("Main: File move confirmed! Returning success to the user.")
+}
+
+/* Output:
+Main: User request received. Spawning file mover goroutine.
+Main: Waiting for file move confirmation...
+File mover: Starting to move file from /tmp/upload.dat to /var/secure/data.dat...
+File mover: File move complete. Sending confirmation.
+Main: File move confirmed! Returning success to the user.
+*/
+```
+
+(2) A web crawler. A single, fast-crawling routine (the producer) identifies new URLs to visit. These URLs are then passed to a pool of slower worker goroutines (the consumers) that handle the actual work of downloading the content. The producer is often much faster than the consumers.
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+// The producer goroutine: finds new URLs to crawl.
+func producer(tasks chan string) {
+	urls := []string{"url-1", "url-2", "url-3", "url-4", "url-5"}
+
+	for _, url := range urls {
+		fmt.Printf("Producer: Found new URL: %s\n", url)
+		tasks <- url // Add the URL to the buffered channel.
+		// The producer continues immediately, even if no consumer is ready.
+		// It only blocks if the buffer is full.
+	}
+	close(tasks) // Close the channel when all tasks are produced.
+}
+
+// The consumer goroutine: downloads and processes the content from a URL.
+func consumer(id int, tasks chan string) {
+	for url := range tasks {
+		fmt.Printf("Consumer %d: Processing URL %s...\n", id, url)
+		// Simulate slow, time-consuming work
+		time.Sleep(2 * time.Second)
+		fmt.Printf("Consumer %d: Finished with URL %s.\n", id, url)
+	}
+}
+
+func main() {
+	// Create a buffered channel with a capacity of 3.
+	// This acts as a queue for tasks.
+	tasks := make(chan string, 3)
+
+	// Launch a producer goroutine.
+	go producer(tasks)
+
+	// Launch 2 consumer goroutines.
+	go consumer(1, tasks)
+	go consumer(2, tasks)
+
+	// Wait long enough for all tasks to be processed.
+	// In a real application, you'd use a sync.WaitGroup.
+	time.Sleep(15 * time.Second)
+	fmt.Println("Main: All tasks are likely done.")
+}
+
+/*
+Producer: Found new URL: url-1
+Producer: Found new URL: url-2
+Producer: Found new URL: url-3
+Producer: Found new URL: url-4
+Consumer 1: Processing URL url-1...
+Consumer 2: Processing URL url-2...
+Producer: Found new URL: url-5
+Consumer 1: Finished with URL url-1.
+Consumer 1: Processing URL url-3...
+Consumer 2: Finished with URL url-2.
+Consumer 2: Processing URL url-4...
+Consumer 1: Finished with URL url-3.
+Consumer 1: Processing URL url-5...
+Consumer 2: Finished with URL url-4.
+Consumer 1: Finished with URL url-5.
+Main: All tasks are likely done.
+*/
+```
+
+**Channel Multiplexing - `select()`**  
+
+
+### Concurrency Best Practices and Patterns
+
+
+## Standard Library
+
+
+## The Context
+
+
+## Writing Tests
