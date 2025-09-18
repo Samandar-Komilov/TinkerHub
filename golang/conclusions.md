@@ -390,6 +390,10 @@ func main() {
 ```
 If we use `recover()` everywhere, we might hide bugs unintentionally. There are cases where `panic()` has to be and some cases where we can `recover()` it.
 
+[!] `recover()` should be used inside of `defer` to ensure that it is executed even if a panic occurs later in the code.
+
+[!] `recover()` function recovers the panic IN THE SAME GOROUTINE as the panic.
+
 ## Modules, Packages and Imports
 
 Go code is organized into three main units: repositories, modules and packages.

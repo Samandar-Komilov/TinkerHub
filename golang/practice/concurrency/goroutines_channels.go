@@ -25,11 +25,47 @@ func Main_gorochannel() {
 	// fmt.Println(<-ch2)
 
 	// ex5: for-range stops when channel is closed.
-	ch2 := make(chan int)
-	go sender1(ch2)
-	for num := range ch2 {
-		fmt.Println(num)
+	// ch2 := make(chan int)
+	// go sender1(ch2)
+	// for num := range ch2 {
+	// 	fmt.Println(num)
+	// }
+
+	// ex6, 8
+	ch3 := make(chan int, 2)
+	ch3 <- 1
+	ch3 <- 2
+	// ch3 <- 3
+	fmt.Println(<-ch3)
+	ch3 <- 3
+	fmt.Println(<-ch3)
+	// ex8
+	fmt.Println(len(ch3), cap(ch3))
+	fmt.Println(<-ch3)
+
+	// ex11
+	ch4 := make(chan int)
+	go sender1(ch4)
+	for i := range ch4 {
+		fmt.Println("Received:", i)
 	}
+
+	// ex12
+	v, ok := <-ch4
+	if !ok {
+		fmt.Println("Channel already closed. V:", v)
+	}
+
+	// ex13
+
+	// ex14
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println("Recovered panic:", err)
+		}
+	}()
+
+	ch4 <- 4
 }
 
 // ex1
@@ -51,7 +87,7 @@ func charPrint() {
 func sender1(ch chan int) {
 	for i := range 5 {
 		ch <- i
-		time.Sleep(time.Second)
+		time.Sleep(300 * time.Millisecond)
 	}
 	close(ch)
 }
