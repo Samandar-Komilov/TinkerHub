@@ -20,7 +20,7 @@ In this post we are gonna explore the standard `net/http` library internals - ho
         - `http.Handle` and `http.HandleFunc`
         - `http.Handler` and `http.HandlerFunc`
         - `http.Serve` and `http.ListenAndServe`
-    2. Context Usage
+    2. Request Context: Why We Need It?
         - `request.Context()`
     3. Routing
         - `http.ServeMux` and `http.NewServeMux`
@@ -42,40 +42,38 @@ In this post we are gonna explore the standard `net/http` library internals - ho
 The most important construct in building web applications is `Request`, no doubt. When we built our own [Nginx clone](https://github.com/Samandar-Komilov/cserve) in C, we too defined that entity at first. For this reason, I believe it worth examining `http.Request` struct initially which is defined in the standard `net/http` library:
 ```go
 type Request struct {
-    Method string
-    URL *url.URL
+    Method string // HTTP method (GET, POST, PUT, etc.)
+    URL *url.URL // URI being requested (for server requests) or the URL to access (for client requests)
     Proto string // e.g. "HTTP/1.0"
-    Header Header
-    Body io.ReadCloser
-    ContentLength int64
-    TransferEncoding []string
-    Close bool
-    Host string
-    Form url.Values
-    PostForm url.Values
-    MultipartForm *multipart.Form
-    Trailer Header
-    TLS *tls.ConnectionState
-    ctx context.Context
+    Header Header // Request headers as map[string][]string.
+    Body io.ReadCloser // The request body as a readable stream
+    ContentLength int64 // Length of the body in bytes (or -1 if chunked/unknown)
+    Close bool // Flag to close the request after receiving the response (true means no keep-alive connection)
+    Host string // Host header, from which device the request is coming
+    Form url.Values // Parsed form data, including URL query params and PATCH, PUT or POST form data
+    MultipartForm *multipart.Form // Parsed multipart form, including file uploads
+    Trailer Header // Headers after body in chunked responses
+    TLS *tls.ConnectionState // TLS details if HTTPS (nil otherwise)
+    ctx context.Context // Request context for cancellation, deadlines, or values
+    // ...shortened
 }
 ```
+The most striking point is that we don't necessarily need to parse the raw HTTP, create a new instance from struct, etc. - it happens automatically. 
 
 ### http.ResponseWriter
 
 It's nice that HTTP request is parsed into `http.Request` construct automatically, with all necessary fields available. But how we return the response? I mean, we should somehow build the corresponding `http.Response` construct, isn't it? But how? Before answering the question, let's consider the `http.Response` struct:
 ```go
 type Response struct {
-    Status string // e.g. "200 OK"
-	StatusCode int    // e.g. 200
+    Status string // Response Status, e.g. "200 OK"
+	StatusCode int // Status Code in integer, e.g. 200
 	Proto string // e.g. "HTTP/1.0"
-    Header Header
-    Body io.ReadCloser
-    ContentLength int64
-    TransferEncoding []string
-    Close bool
-    Trailer Header
-    Request *Request
-    TLS *tls.ConnectionState
+    Header Header // Request headers as map[string][]string.
+    Body io.ReadCloser // The response body as a readable stream
+    ContentLength int64 // Length of the body in bytes (or -1 if chunked/unknown)
+    Request *Request // Associated request instance to this response
+    TLS *tls.ConnectionState // TLS details if HTTPS (nil otherwise)
+    // ...shortened
 }
 ```
 
@@ -87,33 +85,88 @@ type ResponseWriter interface {
     WriteHeader(statusCode int)
 }
 ```
+The structure is write-only and the implementations are provided by the built-in HTTP server (uses `*http.Response` internally), so we don't create it manually. Now, let's discuss what we can do with this interface:
+* `Header() http.Header`: returns the response headers as an `http.Header` map (which is internally `map[string][]string`). We may use it to set headers like `Content-Type` before writing the body. For example, `w.Header().Set("Content-Type", "application/json")`.
+* `Write([]byte) (int, error)`: writes the response body as bytes. It implements the `io.Writer` interface, which means you can use `fmt.Fprintf(w, ...)` or such other writers. For example, `w.Write([]byte("Hello World"))`.
+* `WriteHeader(statusCode int)`: sets the HTTP status code. We must call it before writing the body, otherwise defaults to 200. For example, `w.WriteHeader(http.StatusNotFound)` or more simply `w.WriteHeader(404)`.
 
 
 ### http.Handle and http.HandleFunc
 
-We analyzed the `Request` and `Response` constructs, but how we can "glue" them together that result an API handler? Well, that's now easy as we already know everything needed:
-```go
-func myhandler(w http.ResponseWriter, r *http.Request){
-    fmt.Printf(w, "Hello World!\n")
-}
-```
-In Go, any function that has the `http.ResponseWriter` and `*http.Request` parameters is considered as a handler. This function is simply responding to the request with `Hello World!`, but now another question arises again - how does it know which path it responds to? `/hello`?   
+We analyzed the `Request` and `Response` constructs, learned how to send responses with `ResponseWriter` interface, but how we can "glue" them together that result an API handler? At this point, we come across the helper functions that registers HTTP handlers with a default global multiplexer `http.DefaultServeMux` (more about multiplexers in chapter 3):
+1. `http.Handle(pattern string, handler http.Handler)`: registers a handler for the given URL pattern. But what does that **handler** mean? 
+    * A handler is any type that implements `http.Handler` interface. This interface is a core contract for anything that can handle HTTP requests. Its structure is as follows:
+    ```go
+    type Handler interface {
+        ServeHTTP(ResponseWriter, *Request)
+    }
+    ```
+    * The server calls `ServeHTTP()` method for each incoming request. You can implement it on structs for stateful behaviour, for example:
+    ```go
+    type MyHandler struct {
+        count int
+    }
 
-At this point, we introduce `http.HandleFunc` that associates the handler with the path. Here is a quick example:
+    func (h *MyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+        h.count++
+        fmt.Fprintf(w, "Request Count: %d", h.count)
+    }
+
+    // ...
+    http.Handle("/", &MyHandler{})
+    ```
+    This handler counts the number of requests sent, ezpz. This is primarily used while working with Middlewares (more about multiplexers in chapter 4).  
+    Well, this is one way of building a simple API. But you see, how much work we should perform? Create a struct, implement a method on it and pass its address to the `http.Handle()` function. Do I have to? No.
+2. `http.HandleFunc(pattern string, handler func(http.ResponseWriter, r *http.Request))`: A convenience wrapper around `http.Handle`. It takes a plan function and wraps it in `http.HandlerFunc` to make it satisfy `http.Handler` interface. Wait a second, what is `http.HandlerFunc`?
+    * `http.HandlerFunc` is a type alias for a function signature that matches `ServeHTTP()` method of the `http.Handler` interface:
+    ```go
+    type HandlerFunc func(ResponseWriter, *Request)
+    ```
+So, if we write a function in this signature, the `HandleFunc()` makes it an API endpoint automatically:
 ```go
-func main() {
-	http.HandleFunc("/my", myhandler)
+func hello(w http.ResponseWriter, r *http.Request) {
+    fmt.Fprintf(w, "Hello\n")
 }
+// ...
+http.HandleFunc("/hello", hello)
 ```
+
+Well, now we already know everything we need to create a simple API endpoint. Isn't something missing? Of course.
 
 
 ### http.Serve and http.ListenAndServe
 
-Although, it seems we are done, when we run the code nothing works. Well, it's natural - where does it know which port it is listening to? Every server application should listen at some specific port to accept requests and respond accordingly, but where is that? Here:
+Although, it seems we are done, when we run the code nothing works. Well, it's natural - where does it know which port it is listening to? Every server application should listen at some specific port to accept requests and respond accordingly, but where is that? We have two choices at this point:
+1. `http.Serve(l net.Listener, handler http.Handler) error`: starts the HTTP server. But... 
+    * This is a lower-level function that uses existing listeners like `net.Listen` or `tls.Listen`. We mostly use it for custom setups like non-TCP, custom ports or Unix sockets. Also we should manually configure TLS with `crypto/tls`, use with `*http.Server` for `Shutdown` method to enable graceful shutdown.
+    * However, we don't cover this right now. You can read my separate post about `net` library [here](https://voidp.dev/blog/) (soon...).
+2. `http.ListenAndServe(addr string, handler http.Handler) error`: starts the HTTP server. But...
+    * This is a higher-level function, it automatically creates a `net.Listener` and passes it to `http.Serve`. It is very simple, but not recommended for production setups as it lacks timeouts, graceful shutdown, etc. But for now, we can use it to continue our journey without focusing too deep on details.
+So, now our first API is complete:
 ```go
-func main() {
-	http.HandleFunc("/my", myhandler)
+func hello(w http.ResponseWriter, r *http.Request) {
+    fmt.Fprintf(w, "Hello\n")
+}
 
+func main() {
+	http.HandleFunc("/hello", hello)
+
+    fmt.Println("Listening on port 8090...")
     http.ListenAndServe(":8090", nil)
 }
 ```
+
+
+## 2. Request Context: Why We Need It?
+
+To understand `context.Context` in Go HTTP servers, let's logically build up the problem it solves. Context was added in Go 1.7 to `http.Request` for better request lifecycle management.  
+
+**Problem:** Imagine a handler that performs a slow operation, like querying a database, calling an external API or processing a large file. And say it takes 10 seconds to perform this task:
+```go
+func slowHandler(w http.ResponseWriter, r *http.Request){
+    // Let's simulate slow work
+    time.Sleep(10 * time.Second)
+    fmt.Fprintln(w, "Successfully done the 10 second task!")
+}
+```
+The issue is - what if the client disconnects after 2 seconds? 
