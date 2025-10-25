@@ -1,11 +1,9 @@
 # Roadmap: `net/http` (trivial → advanced)
 
-### 1) Absolute basics — `Handler`, `Serve`, `ResponseWriter`, `Request`
+### 0. Absolute basics — `Request`, `Response`, `Server`, `ResponseWriter`, `ListenAndServe`, `Serve`
 
 **APIs:** `http.Handler` / `http.HandlerFunc`, `http.ListenAndServe`, `http.Serve`, `http.ResponseWriter`, `*http.Request`. ([Go Packages][1])
 **Microproject:** Minimal server with `/health` and `/item/{id}` endpoints. Return JSON and proper status codes.
-**What you learn / gotchas:** Handler is just an interface. `ResponseWriter` is how you control headers, status and body — wrap it to inspect status/size. Server does *not* expect you to close the request body (the server closes it for you). Avoid writing blocking code in the handler: use goroutines for background work.
-**Blog heading:** “How `net/http` works: Handler → ResponseWriter → Listen loop (and why it’s simpler than you think)”
 
 **Minimal server**
 
@@ -18,18 +16,18 @@ http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 log.Fatal(http.ListenAndServe(":8080", nil))
 ```
 
----
+### 1. Request Context - `context.Context`
 
-### 2) Routing vs standard library — what Chi is doing for you
+**APIs:** 
+**Microproject:** 
+
+
+### 2. Routing: Standard Library (`ServeMux`) and Third-Party (`chi`, `gorilla/mux`)
 
 **APIs to inspect:** `http.ServeMux`, path parameters as `r.Context()` values (chi stores params in context).
 **Microproject:** Implement a tiny mux: map path → `http.Handler` and support path params (e.g., `/item/:id`), then compare to `chi` usage.
-**What you learn / gotchas:** Chi is only *routing + middleware* on top of `net/http`. Knowing how `http.ServeMux` and `http.Handler` work explains why chi handlers are just `http.Handler` in disguise — middleware and request context are simple wrapper functions. Don’t confuse router features with server internals.
-**Blog heading:** “Chi is sugar — here’s what it does under the hood”
 
----
-
-### 3) Middleware & handler composition (practical patterns)
+### 3. Middleware & handler composition (practical patterns)
 
 **APIs:** `http.HandlerFunc`, wrapper functions `func(http.Handler) http.Handler`, `context` for request-scoped data.
 **Microproject:** Build a chainable middleware set: logging, request ID (X-Request-ID), panic recovery, and timeout middleware that attaches a context with deadline to `r`.
@@ -48,9 +46,7 @@ func Logging(next http.Handler) http.Handler {
 }
 ```
 
----
-
-### 4) Request body, streaming and large uploads
+### 4. Request body, streaming and large uploads
 
 **APIs:** `r.Body (io.ReadCloser)`, `io.Copy`, `http.MaxBytesReader`, `multipart.Reader`.
 **Microproject:** Implement a streaming upload endpoint that writes to a temp file while enforcing a max size and protecting against slow clients.
@@ -58,7 +54,7 @@ func Logging(next http.Handler) http.Handler {
 
 ---
 
-### 5) HTTP client basics — `http.Client`, `Do`, `NewRequest`
+### 5. HTTP client basics — `http.Client`, `Do`, `NewRequest`
 
 **APIs:** `http.Client`, `http.NewRequest`, `Client.Do`, `http.Get/Post`.
 **Microproject:** Implement a single-feed fetcher that uses `NewRequestWithContext(ctx, "GET", url, nil)` and sets `Accept` headers for RSS/XML.
@@ -79,7 +75,7 @@ body, _ := io.ReadAll(resp.Body)
 
 ---
 
-### 6) Transport & connection reuse — real performance knobs
+### 6. Transport & connection reuse — real performance knobs
 
 **APIs:** `http.Transport` (fields: `MaxIdleConns`, `MaxIdleConnsPerHost`, `IdleConnTimeout`, `TLSHandshakeTimeout`, `DisableCompression`, `MaxConnsPerHost`, `ForceAttemptHTTP2`).
 **Microproject:** Build a reusable `http.Client` with a tuned `Transport` and use it to fetch 100 feeds concurrently (bounded concurrency — see step 9). Measure throughput.

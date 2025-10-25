@@ -159,14 +159,28 @@ func main() {
 
 ## 2. Request Context: Why We Need It?
 
-To understand `context.Context` in Go HTTP servers, let's logically build up the problem it solves. Context was added in Go 1.7 to `http.Request` for better request lifecycle management.  
+Servers need a way to handle metadata on individual requests. This metadata falls into two general categories: 
+* metadata that is required to correctly process the request
+* metadata on when to stop processing the request
+For example, an HTTP server might want to use a tracking ID to identify a chain of requests through a set of microservices. It also might want to set a timer that ends requests to other microservices if they take too long. Go solves this problem with a `Context` construct.
 
-**Problem:** Imagine a handler that performs a slow operation, like querying a database, calling an external API or processing a large file. And say it takes 10 seconds to perform this task:
+### What is the Context?
+
+The authors decided not to add a new feature to the language, nor change the signature of handler functions (due to backward-compatibility promise). Instead, they implemented the `Context` interface inside `context` package and made it another parameter to our functions, as the idiomatic Go encourages this:
 ```go
-func slowHandler(w http.ResponseWriter, r *http.Request){
-    // Let's simulate slow work
-    time.Sleep(10 * time.Second)
-    fmt.Fprintln(w, "Successfully done the 10 second task!")
+func someLogic(ctx context.Context, info string) (string, error){
+    // some logic happens here
+    return "", nil
 }
 ```
-The issue is - what if the client disconnects after 2 seconds? 
+In addition to the `Context` interface, the `context` package also contains several factory functions to create and wrap the contexts:
+- 
+
+I may remove Context chapter from this doc. But first let's finish the FeedlyGo.
+
+
+### Resources & Bibliography
+
+- [Official Go net/http library documentation](https://pkg.go.dev/net/http)
+- [Go By Example - HTTP related sections](https://gobyexample.com/http-server)
+- [Learning Go - An Idiomatic Approach](https://www.amazon.com/Learning-Go-Idiomatic-Real-World-Programming/dp/1492077216) by Jon Bodner

@@ -1,37 +1,36 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"net/http"
+	"time"
 )
 
-type MyHandler struct {
-	count int
+func logMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Println("before request handled:", time.Now())
+		next.ServeHTTP(w, r)
+		log.Println("after request handled:", time.Now())
+	})
 }
 
-func (h *MyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	h.count++
-	fmt.Fprintf(w, "Request Count: %d", h.count)
+func fooHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println(r.URL.Path, "executing fooHandler")
+	w.Write([]byte("OK"))
 }
 
-func hello(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello\n")
-}
-
-func headers(w http.ResponseWriter, r *http.Request) {
-	for name, headers := range r.Header {
-		for _, h := range headers {
-			fmt.Fprintf(w, "%v:%v\n", name, h)
-		}
-		fmt.Println(name, headers)
-	}
+func barHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println(r.URL.Path, "executing barHandler")
+	w.Write([]byte("OK"))
 }
 
 func main() {
-	http.HandleFunc("/hello", hello)
-	http.HandleFunc("/headers", headers)
-	http.Handle("/", &MyHandler{})
+	mux := http.NewServeMux()
 
-	fmt.Println("Listening on port 8090...")
-	http.ListenAndServe(":8090", nil)
+	mux.Handle("GET /foo", http.HandlerFunc(fooHandler))
+	mux.Handle("GET /bar", http.HandlerFunc(barHandler))
+
+	log.Print("listening on :8090...")
+	err := http.ListenAndServe(":8090", logMiddleware(mux))
+	log.Fatal(err)
 }
