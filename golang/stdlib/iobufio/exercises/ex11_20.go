@@ -1,0 +1,102 @@
+package exercises
+
+import (
+	"fmt"
+	"io"
+	"log"
+	"os"
+	"path/filepath"
+	"strings"
+	"time"
+)
+
+func Ex11() {
+	fp := filepath.Join(BASE_DIR, "files", "in.txt")
+	r, _ := os.Open(fp)
+	defer r.Close()
+
+	res, _ := io.ReadAll(r)
+	fmt.Println(string(res))
+}
+
+type TimeStampedWriter struct {
+	w io.Writer
+}
+
+func (tw *TimeStampedWriter) Write(p []byte) (n int, err error) {
+	timestamp := time.Now().Format(time.RFC3339)
+	lines := strings.Split(string(p), "\n")
+	for i := range lines {
+		if lines[i] != "" {
+			lines[i] = string(timestamp) + " " + lines[i]
+		}
+	}
+	res := strings.Join(lines, "\n")
+
+	return tw.w.Write([]byte(res))
+}
+
+func Ex12() {
+	fp := filepath.Join(BASE_DIR, "files", "hello.txt")
+	f, _ := os.Create(fp)
+	defer f.Close()
+
+	writer := &TimeStampedWriter{w: f}
+	writer.Write([]byte("Hello World!\nWhats up?\n"))
+
+	data, err := io.ReadAll(f)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(string(data))
+}
+
+func Ex13() {
+	fpath := filepath.Join(BASE_DIR, "files", "in.txt")
+	large_file, err := os.Open(fpath)
+	if err != nil {
+		log.Fatal("Error while opening file:", err)
+	}
+	defer large_file.Close()
+
+	dest_file, err := os.Create("files/copied.log")
+	if err != nil {
+		log.Fatal("Error while creating destination file:", err)
+	}
+	defer dest_file.Close()
+
+	io.Copy(dest_file, large_file)
+}
+
+func Ex14() {
+	fpath := filepath.Join(BASE_DIR, "files", "in.txt")
+	file, err := os.Open(fpath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+	fr := io.LimitReader(file, 10)
+
+	dest_file, err := os.Create("files/copied.log")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer dest_file.Close()
+
+	io.Copy(dest_file, fr)
+}
+
+func Ex15() {
+	f1, _ := os.Open(filepath.Join(BASE_DIR, "files", "in2.txt"))
+	f2, _ := os.Open(filepath.Join(BASE_DIR, "files", "in3.txt"))
+	defer f1.Close()
+	defer f2.Close()
+
+	mr := io.MultiReader(f1, f2)
+
+	io.Copy(os.Stdout, mr)
+}
+
+func Ex16() {
+
+}

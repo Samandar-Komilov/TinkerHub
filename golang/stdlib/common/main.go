@@ -11,5 +11,19 @@ func main() {
 	// TimeZoneExample()
 	// TruncateRoundExample()
 	// UnixTimestampsExample()
-	DeadlineTimeoutExample()
+	// DeadlineTimeoutExample()
+
+	// ----------------
+	// Ex1()
+	// Ex2()
+	// Ex3()
+	// Ex4()
+	// Ex5()
+	// Ex6()
+	// Ex7()
+	// Ex8()
+	// Ex9()
+	// Ex11()
+	// Ex12()
+	Ex13()
 }

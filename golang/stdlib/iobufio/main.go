@@ -1,5 +1,7 @@
 package main
 
+import "github.com/Samandar-Komilov/TinkerHub/golang/stdlib/iobufio/exercises"
+
 func main() {
 	// ReaderExample()
 	// WriterExample()
@@ -24,5 +26,21 @@ func main() {
 	// AvailableBufferedExample()
 	// NewReadWriterExample()
 	// ScannerExample1()
-	ScannerExample2()
+	// ScannerExample2()
+
+	// -----------------------------
+	// exercises.Ex1()
+	// exercises.Ex2()
+	// exercises.Ex3()
+	// exercises.Ex4()
+	// exercises.Ex5()
+	// exercises.Ex6()
+	// exercises.Ex7_8()
+	// exercises.Ex9()
+	// exercises.Ex10()
+	// exercises.Ex11()
+	// exercises.Ex12()
+	exercises.Ex13()
+	exercises.Ex14()
+	exercises.Ex15()
 }

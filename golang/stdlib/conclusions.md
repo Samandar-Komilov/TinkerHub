@@ -203,7 +203,7 @@ The `io` package provides universal abstractions for input/output streams - file
 
 9. `io.TeeReader(r, w)` - side channel logging. Reads from `r`, writes every byte to `w` as it passes through. Used to inspect or log the data while streaming to somewhere.
     ```go
-        func TeeReader(r Reader, w Writer) Reader {
+    func TeeReader(r Reader, w Writer) Reader {
         return &teeReader{r, w}
     }
 
