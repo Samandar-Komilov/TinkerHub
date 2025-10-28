@@ -98,5 +98,18 @@ func Ex15() {
 }
 
 func Ex16() {
+	f1, _ := os.Open(filepath.Join(BASE_DIR, "files", "in2.txt"))
+	logFile, _ := os.Create(filepath.Join(BASE_DIR, "files", "logs.log"))
+	defer f1.Close()
+	defer logFile.Close()
 
+	pr, pw := io.Pipe()
+
+	go func() {
+		defer pw.Close()
+		n, _ := io.Copy(os.Stdout, f1) // write file contents into pipe
+		fmt.Fprint(pw, n)
+	}()
+
+	io.Copy(logFile, pr) // read from pipe into log
 }

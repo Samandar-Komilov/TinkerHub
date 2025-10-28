@@ -25,5 +25,16 @@ func main() {
 	// Ex9()
 	// Ex11()
 	// Ex12()
-	Ex13()
+	// Ex13()
+
+	// Ex1str()
+	// Ex2str()
+	// Ex3str()
+	// Ex5str()
+	// Ex6str()
+	// Ex7str()
+	// Ex8str()
+	// Ex9str()
+	// Ex10str()
+	Ex14str()
 }

@@ -40,7 +40,8 @@ func main() {
 	// exercises.Ex10()
 	// exercises.Ex11()
 	// exercises.Ex12()
-	exercises.Ex13()
-	exercises.Ex14()
-	exercises.Ex15()
+	// exercises.Ex13()
+	// exercises.Ex14()
+	// exercises.Ex15()
+	exercises.Ex16()
 }
