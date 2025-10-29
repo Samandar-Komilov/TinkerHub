@@ -43,5 +43,8 @@ func main() {
 	// exercises.Ex13()
 	// exercises.Ex14()
 	// exercises.Ex15()
-	exercises.Ex16()
+	// exercises.Ex16()
+	// exercises.Ex17()
+
+	exercises.Ex21_TCP_echo_server()
 }

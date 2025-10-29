@@ -22,9 +22,9 @@
 15. Combine multiple small files into one large file using `io.MultiReader`.
 16. Write a function that logs file read/write byte count using `io.Copy` and `io.Pipe`.
 17. Build a command-line tool that mimics `cat` using `io.Copy(os.Stdout, file)`.
-18. Implement a function that reverses the content of a file (line by line) using `io.Reader` and buffers.
-19. Create a reader that skips the first N bytes before returning content (custom wrapper around another reader).
-20. Build a small program that reads binary data from a file and interprets it as structured bytes (for network packet simulation).
+18. Implement a function that reverses the content of a file (line by line) using `io.Reader` and buffers. ⏳
+19. Create a reader that skips the first N bytes before returning content (custom wrapper around another reader). ⏳
+20. Build a small program that reads binary data from a file and interprets it as structured bytes (for network packet simulation). ⏳
 
 ### **C. Networking-Oriented Exercises**
 

@@ -1,6 +1,7 @@
 package exercises
 
 import (
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -113,3 +114,44 @@ func Ex16() {
 
 	io.Copy(logFile, pr) // read from pipe into log
 }
+
+func Ex17() {
+	var src, dest string
+
+	flag.StringVar(&src, "src", "", "Source file")
+	flag.StringVar(&dest, "dest", "", "Destination")
+
+	flag.Parse()
+
+	fmt.Println(src, dest)
+	// curdir, _ := os.Getwd()
+	// src_path, dest_path := filepath.Join(curdir, "files", src), filepath.Join(curdir, "files", dest)
+
+	fsrc, err := os.Open(src)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fdest, err := os.Create(dest)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer fsrc.Close()
+	defer fdest.Close()
+
+	written, _ := io.Copy(fdest, fsrc)
+	fmt.Println("Written:", written, "bytes")
+}
+
+// func Ex18() {
+// 	var file_src string
+// 	flag.StringVar(&file_src, "src", "", "Source file")
+
+// 	flag.Parse()
+
+// }
+
+// type SkipReader struct{}
+
+// func (sr *SkipReader) Read(p []byte) (n int64, err error) {
+
+// }
