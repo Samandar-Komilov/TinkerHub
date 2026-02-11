@@ -1,0 +1,1 @@
+void log_transaction(const int tid, const char *user, const double amount);
