@@ -60,13 +60,13 @@ fn test_unit_converter() {
 #[test]
 fn test_stats() {
     fn get_stats(arr: &[u32]) -> (u32, u32, u32) {
-        let (mut max, mut min, mut sum) = (0, u32::MAX, 0);
+        let (mut max, mut sum) = (0, 0);
         // Handle empty case if needed, but assuming non-empty for now
         if arr.is_empty() {
             return (0, 0, 0);
         }
 
-        min = arr[0]; // Initialize min properly
+        let mut min = arr[0]; // Initialize min properly
 
         for &v in arr {
             if v > max {
