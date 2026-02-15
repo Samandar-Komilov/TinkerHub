@@ -40,7 +40,7 @@ This plan is designed to guide you through learning SOLID principles using C, pr
 ### Step 3: Refactor (The Fix)
 - [ ] **Goal**: Split by *reason to change*.
 - [ ] Create separate modules/functions for:
-    - [ ] `formatting.c`: Logic for formatting log messages (Text vs JSON).
+    - [ ] `formatter.c`: Logic for formatting log messages (Text vs JSON).
     - [ ] `transport.c`: Logic for writing to disk vs sending to network.
     - [ ] `controller.c`: Logic for *when* to log (policy).
 - [ ] **Check**: Can you change the log format without touching the file writing code?

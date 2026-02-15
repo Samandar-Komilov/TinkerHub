@@ -1,6 +1,5 @@
 # Action | Step by Step Build Log
 
-
 ### F1: Core Logging
 
 Initially, we are expected to create a minimal yet working logging system that prints logs to a specified file:
@@ -37,9 +36,9 @@ int main() {
 }
 ```
 
-Well, nothing special, nothing extraordinary. But recall that our requirements change frequently. 
+Well, nothing special, nothing extraordinary. But recall that our requirements change frequently.
 
-### F2: Send Logs over a Network in JSON, but disk logging should still be text and work
+### F2: Send Logs over a Network in JSON, but disk logging should still be text and work as expected
 
 We need to add JSON logging to a network endpoint. This means we need to add new functionality in the existing function, based on our current expertise. The worst scenario would be both JSON construction and network logic in the same function.
 
@@ -120,3 +119,17 @@ Did you notice the amount of change needed? The function which was just writing 
 
 ##### What To Do?
 
+We must split the logic. One fat function that is doing multiple things is far worse than multiple functions but doing one thing. The split should be by "reason to change". But what is the meaning of reason to change?
+For example, currently our `log_transaction` has 3 reasons to change, which makes it fragile:
+
+- **Output format:** Business Team wants to change text log format: `[INFO] user=X amount=Y`.
+- **Transport:** DevOps Team says we need to use TCP instead of UDP or change the log file path.
+- **Policy:** Security Team says we must not log transactions over 1 million dollars explicitly, just mask them LARGE.
+  We need to extract the responsibilities into 3 different layers:
+- Formatter Layer (`formatter.c`): takes raw data and returns string in text or JSON.
+- Transport Layer (`transport.c`): takes a string data and sends it somewhere. It doesn't care what is the message or where it came from.
+- Controller Layer (`controller.c`): Logic for _when_ to log (policy).
+
+```c
+
+```
