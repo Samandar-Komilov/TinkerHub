@@ -2,10 +2,13 @@
 #define LOGGER_H
 
 #include "config.h"
-#include "dto.h"
+#include "interfaces.h"
 
-void log_transaction(char *buffer, const Transaction *t,
-                     const enum FormatTypeEnum ftype,
-                     const enum TransportTypeEnum ttype);
+typedef struct Logger {
+    const Formatter *formatter;
+    const Transport *transport;
+} Logger;
+
+int log_transaction(const Logger *lg, const Transaction *t);
 
 #endif // LOGGER_H
