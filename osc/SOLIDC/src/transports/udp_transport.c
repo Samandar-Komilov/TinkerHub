@@ -7,9 +7,14 @@
 #include <unistd.h>
 
 static int udp_send(const char *msg, size_t len) {
+    ssize_t sent;
     int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
-    if (sockfd < 0)
+    if (!msg) {
         return -1;
+    }
+    if (sockfd < 0) {
+        return -1;
+    }
 
     struct sockaddr_in addr;
     memset(&addr, 0, sizeof(addr));
@@ -20,10 +25,14 @@ static int udp_send(const char *msg, size_t len) {
         close(sockfd);
         return -1;
     }
-    ssize_t sent = sendto(sockfd, msg, len, 0, (struct sockaddr *)&addr,
-                          sizeof(addr));
+    sent = sendto(sockfd, msg, len, 0, (struct sockaddr *)&addr, sizeof(addr));
     close(sockfd);
-    return sent >= 0 ? 0 : -1;
+    return sent == (ssize_t)len ? 0 : -1;
 }
 
-const Transport UDP_TRANSPORT = { .send = udp_send };
+const Sender UDP_SENDER = { .send = udp_send };
+const Transport UDP_TRANSPORT = {
+    .sender = &UDP_SENDER,
+    .flushable = NULL,
+    .connectable = NULL,
+};
