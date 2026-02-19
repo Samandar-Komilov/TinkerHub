@@ -38,7 +38,7 @@ int main() {
 
 Well, nothing special, nothing extraordinary. But recall that our requirements change frequently.
 
-### F2: Send Logs over a Network in JSON, but disk logging should still be text and work as expected
+### F2: SRP: Send Logs over a Network in JSON, but disk logging should still be text and work as expected
 
 We need to add JSON logging to a network endpoint. This means we need to add new functionality in the existing function, based on our current expertise. The worst scenario would be both JSON construction and network logic in the same function.
 
@@ -130,6 +130,6 @@ For example, currently our `log_transaction` has 3 reasons to change, which make
 - Transport Layer (`transport.c`): takes a string data and sends it somewhere. It doesn't care what is the message or where it came from.
 - Controller Layer (`controller.c`): Logic for _when_ to log (policy).
 
-```c
+### F3: OCP: Every Addition requires main logic change. Can we make it only add new code without touching existing?
 
-```
+To achieve this behaviour, we must give up `switch` based logic and start modeling with separate modules and function pointers.

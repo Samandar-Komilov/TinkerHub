@@ -1,11 +1,8 @@
 #include "include/logger.h"
-#include "include/dto.h"
-#include "include/formatter.h"
-#include "include/transport.h"
 
-void log_transaction(char *buffer, const Transaction *t,
-                     const enum FormatTypeEnum ftype,
-                     const enum TransportTypeEnum ttype) {
-    format_transaction(t, ftype, buffer);
-    transport_log_message(ttype, buffer);
+int log_transaction(const Logger *lg, const Transaction *t) {
+    char buf[MAX_BUFFER_SIZE];
+    int n = lg->formatter->format(t, buf, MAX_BUFFER_SIZE);
+    if (n < 0) return -1;
+    return lg->transport->send(buf, (size_t)n);
 }
