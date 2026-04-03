@@ -1,4 +1,5 @@
-mod algebraic_collec;
+mod algebraic_types;
+mod collections;
 mod common;
 mod ownership_borrowing;
 
